@@ -1,6 +1,13 @@
 package bml
 
-type OtherThing struct {
-	Fields []string
-	TableName string
+type Node struct {
+	ID string
+	Type Token
+	Children []Node
+}
+
+
+type Block struct {
+	Node
+	
 }

@@ -7,13 +7,14 @@ const (
 	ILLEGAL Token = iota
 	EOF // End of File
 	WS // white space
-	DELIM // block delimiter
+	DELIMOPEN // block delimiter
+	DELIMCLOSE
 
 	// Literals
 	IDENT // identifiers, names
 
 	// Blocks
-
+	BLOCK
 	DOCUMENT // 
 	CHAPTER    // 
 	PARAGRAPH

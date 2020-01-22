@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+const open = rune('<')
+
+
 // Scanner represents a lexical scanner.
 type Scanner struct {
 	r *bufio.Reader
@@ -28,6 +31,10 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	if isWhitespace(ch) {
 		s.unread()
 		return s.scanWhitespace()
+				
+	} else if isOpen(ch) {
+		s.unread()
+		return s.scanBlock()
 	} else if isLetter(ch) {
 		s.unread()
 		return s.scanIdent()
@@ -99,6 +106,38 @@ func (s *Scanner) scanIdent() (tok Token, lit string) {
 	return IDENT, buf.String()
 }
 
+// scanIdent consumes the current rune and all contiguous ident runes.
+func (s *Scanner) scanBlock() (tok Token, lit string) {
+	// Create a buffer and read the current character into it.
+	var buf bytes.Buffer
+	buf.WriteRune(s.read())
+
+	// Read every subsequent ident character into the buffer.
+	// Non-ident characters and EOF will cause the loop to exit.
+	var close bool
+	
+	for {
+		if ch := s.read(); ch == eof {
+			break
+		} else if close && isEnd(ch)  {
+
+				_, _ = buf.WriteRune(ch)
+				break
+		
+		} else if isClose(ch)  {
+			close = true
+			_, _ = buf.WriteRune(ch)
+		} else {
+			_, _ = buf.WriteRune(ch)
+		}
+	}
+
+
+
+	// Otherwise return as a regular identifier.
+	return BLOCK, buf.String()
+}
+
 // read reads the next rune from the buffered reader.
 // Returns the rune(0) if an error occurs (or io.EOF is returned).
 func (s *Scanner) read() rune {
@@ -120,6 +159,15 @@ func isLetter(ch rune) bool { return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && c
 
 // isDigit returns true if the rune is a digit.
 func isDigit(ch rune) bool { return (ch >= '0' && ch <= '9') }
+
+// isOpen returns true if the rune is a the open angle bracket.
+func isOpen(ch rune) bool { return (ch == '<' ) }
+
+// isOpen returns true if the rune is a the open angle bracket.
+func isClose(ch rune) bool { return (ch == '/' ) }
+
+// isOpen returns true if the rune is a the open angle bracket.
+func isEnd(ch rune) bool { return (ch == '>' ) }
 
 // eof represents a marker rune for the end of the reader.
 var eof = rune(0)
