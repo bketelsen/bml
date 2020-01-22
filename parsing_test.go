@@ -19,16 +19,38 @@ func TestParser_ParseBlock(t *testing.T) {
 	}{
 		// Single field statement
 		{
-			s: `<document />`,
+			s: `<document <chapter /> />`,
+			stmt: &bml.Block{
+				Node: bml.Node{
+					Type:    bml.DOCUMENT,
+					
+				},
+				Raw: `<document <chapter />`,
+
+			},
+		},
+
+		{
+			s: `<chapter />`,
+			stmt: &bml.Block{
+				Node: bml.Node{
+					Type:    bml.CHAPTER,
+				},
+				Raw: `<chapter />`,
+
+			},
+		},
+		
+		{
+			s: `<bob />`,
 			stmt: &bml.Block{
 				Node: bml.Node{
 					Type:    bml.BLOCK,
 				},
 
 			},
+			err: `Unknown block type`,
 		},
-
-		
 		
 	}
 

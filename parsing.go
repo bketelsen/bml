@@ -3,6 +3,9 @@ package bml
 import (
 	"fmt"
 	"io"
+	"strings"
+	"errors"
+	
 )
 
 // SelectStatement represents a SQL SELECT statement.
@@ -28,18 +31,23 @@ func NewParser(r io.Reader) *Parser {
 
 // Parse parses a SQL SELECT statement.
 func (p *Parser) Parse() (*Block, error) {
-	stmt := &Block{}
 
-	// First token should be a "SELECT" keyword.
-	if tok, lit := p.scanIgnoreWhitespace(); tok != BLOCK {
+
+	 tok, lit := p.scanIgnoreWhitespace()
+	 if tok != BLOCK {
 		return nil, fmt.Errorf("found %q, expected BLOCK", lit)
 	}
 
-	stmt.Type = BLOCK
+
+	bl, err := p.parseBlock(lit)
+	fmt.Println(bl,err)
+	if err != nil {
+		return bl, err
+	}
 
 
 	// Return the successfully parsed statement.
-	return stmt, nil
+	return bl, nil
 }
 
 // scan returns the next token from the underlying scanner.
@@ -68,6 +76,25 @@ func (p *Parser) scanIgnoreWhitespace() (tok Token, lit string) {
 	}
 	return
 }
+
+func (p *Parser) parseBlock(inner string) (b *Block, err error) {
+	b = &Block{}
+	b.Raw = inner
+	s := NewScanner(strings.NewReader(inner[1:]))
+	_,l := s.scanIdent()
+
+	switch strings.ToUpper(l) {
+	case "DOCUMENT":
+		b.Type = DOCUMENT
+	case "CHAPTER":
+		b.Type = CHAPTER
+	default:
+		err = errors.New("Unknown block type")
+	}
+
+	return
+}
+
 
 // unscan pushes the previously read token back onto the buffer.
 func (p *Parser) unscan() { p.buf.n = 1 }
